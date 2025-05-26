@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maja & Sophie - Lernspiel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Comic Neue', cursive;
+        }
+        
+        .game-button {
+            @apply px-6 py-3 rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50;
+        }
+        
+        .nav-btn {
+            @apply px-4 py-2 rounded-lg font-semibold text-white transition-all duration-300 text-sm md:text-base focus:outline-none focus:ring-4 focus:ring-opacity-50;
+        }
+        
+        .screen {
+            @apply hidden;
+        }
+        
+        .screen.active {
+            @apply block;
+        }
+        
+        .character-card {
+            @apply bg-white rounded-xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 cursor-pointer;
+        }
+        
+        .character-avatar {
+            @apply w-24 h-24 rounded-full mx-auto mb-4 border-4 border-purple-300;
+        }
+        
+        .game-card {
+            @apply bg-white rounded-xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-transparent hover:border-purple-300;
+        }
+        
+        .memory-card {
+            @apply w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center text-2xl font-bold text-white cursor-pointer transform transition-all duration-300 hover:scale-105;
+        }
+        
+        .memory-card.flipped {
+            @apply bg-white border-2 border-purple-300;
+        }
+        
+        .progress-bar {
+            @apply w-full bg-gray-200 rounded-full h-4 overflow-hidden;
+        }
+        
+        .progress-fill {
+            @apply h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500 ease-out;
+        }
+        
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .modal-overlay {
+            @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+        }
+        
+        .modal-content {
+            @apply bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl;
+        }
+        
+        .spinner {
+            @apply animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600;
+        }
+        
+        .story-image {
+            @apply max-w-full h-auto rounded-lg shadow-md;
+        }
+        
+        .achievement-badge {
+            @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-300;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-200 via-pink-200 to-orange-200 min-h-screen">
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="modal-overlay" style="display: none;">
+        <div class="modal-content text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-lg font-semibold">Lade Spiel...</p>
+        </div>
+    </div>
+
+    <!-- Global Notification -->
+    <div id="globalNotification" class="fixed top-4 right-4 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-40 transform translate-x-full transition-transform duration-300">
+        <div class="flex items-center">
+            <i class="fas fa-info-circle mr-2"></i>
+            <span id="notificationText">Benachrichtigung</span>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 max-w-6xl">
+        <!-- Navigation Bar -->
+        <nav id="topBar" class="bg-purple-600 p-4 rounded-xl shadow-lg mb-6 flex flex-wrap justify-center items-center gap-4" style="display: none;">
+            <button id="newGameBtn" class="nav-btn bg-green-500 hover:bg-green-600 focus:ring-green-400">
+                <i class="fas fa-play mr-2"></i>Neues Spiel
+            </button>
+            <button id="saveGameBtn" class="nav-btn bg-blue-500 hover:bg-blue-600 focus:ring-blue-400">
+                <i class="fas fa-save mr-2"></i>Speichern
+            </button>
+            <button id="loadGameBtn" class="nav-btn bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400 text-black">
+                <i class="fas fa-folder-open mr-2"></i>Laden
+            </button>
+            <button id="helpBtn" class="nav-btn bg-cyan-500 hover:bg-cyan-600 focus:ring-cyan-400">
+                <i class="fas fa-question-circle mr-2"></i>Hilfe
+            </button>
+            <button id="parentAreaBtn" class="nav-btn bg-pink-500 hover:bg-pink-600 focus:ring-pink-400">
+                <i class="fas fa-user-cog mr-2"></i>Eltern
+            </button>
+            <button id="toggleAudioBtn" class="nav-btn bg-gray-500 hover:bg-gray-600 focus:ring-gray-400">
+                <i id="audioIcon" class="fas fa-volume-up mr-2"></i><span id="audioText">Audio An</span>
+            </button>
+        </nav>
+
+        <!-- Game Header -->
+        <header id="gameHeader" class="bg-white p-6 rounded-xl shadow-lg mb-6 text-center" style="display: none;">
+            <h1 class="text-4xl font-bold text-purple-700 mb-4 floating-animation">
+                🏰 Maja & Sophie's Abenteuer 🏰
+            </h1>
+            <div id="dayCounter" class="text-xl font-semibold text-purple-600 mb-2">Tag 1 von 35</div>
+            <div class="progress-bar mb-4">
+                <div id="progressFill" class="progress-fill" style="width: 3%;"></div>
+            </div>
+            <div id="chapterDisplay" class="text-sm text-gray-600 mb-4">Kapitel 1: Die Reise beginnt</div>
+            
+            <!-- Character Icons -->
+            <div class="flex justify-center space-x-4">
+                <div class="text-center">
+                    <div class="character-avatar bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center">
+                        <span class="text-3xl">👧</span>
+                    </div>
+                    <p class="text-sm font-semibold">Maja</p>
+                </div>
+                <div class="text-center">
+                    <div class="character-avatar bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
+                        <span class="text-3xl">🧒</span>
+                    </div>
+                    <p class="text-sm font-semibold">Sophie</p>
+                </div>
+                <div class="text-center">
+                    <div class="character-avatar bg-gradient-to-br from-green-400 to-lime-400 flex items-center justify-center">
+                        <span class="text-3xl">👶</span>
+                    </div>
+                    <p class="text-sm font-semibold">Luca</p>
+                </div>
+                <div class="text-center">
+                    <div class="character-avatar bg-gradient-to-br from-purple-400 to-indigo-400 flex items-center justify-center">
+                        <span class="text-3xl">🧙‍♀️</span>
+                    </div>
+                    <p class="text-sm font-semibold">Crunella</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Start Screen -->
+        <section id="startScreen" class="screen active">
+            <div class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-2xl mx-auto">
+                <div class="mb-8">
+                    <div class="text-8xl mb-4 floating-animation">🏰</div>
+                    <h1 class="text-4xl font-bold text-purple-700 mb-4">Maja & Sophie's Abenteuer</h1>
+                    <p class="text-lg text-gray-600 mb-8">Begleite Maja und Sophie auf ihrer magischen Reise und hilf ihnen beim Lesen lernen!</p>
+                </div>
+                <div class="space-y-4">
+                    <button id="startGameBtn" class="game-button bg-green-500 hover:bg-green-600 focus:ring-green-400 w-full">
+                        <i class="fas fa-play mr-2"></i>Neues Abenteuer starten
+                    </button>
+                    <button id="loadGameStartBtn" class="game-button bg-blue-500 hover:bg-blue-600 focus:ring-blue-400 w-full">
+                        <i class="fas fa-folder-open mr-2"></i>Gespeichertes Spiel laden
+                    </button>
+                    <button id="tutorialBtn" class="game-button bg-purple-500 hover:bg-purple-600 focus:ring-purple-400 w-full">
+                        <i class="fas fa-graduation-cap mr-2"></i>Tutorial & Hilfe
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Difficulty Selection -->
+        <section id="difficultyScreen" class="screen">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-purple-700 mb-8 text-center">Wähle deine Lesestufe</h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="character-card" data-difficulty="entdecker">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">🧸</div>
+                            <h3 class="text-xl font-bold text-purple-700 mb-2">Buchstabenentdecker</h3>
+                            <p class="text-gray-600 text-sm">Für Anfänger - Erste Buchstaben und einfache Wörter</p>
+                        </div>
+                    </div>
+                    <div class="character-card" data-difficulty="anfaenger">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">📖</div>
+                            <h3 class="text-xl font-bold text-purple-700 mb-2">Leseanfänger</h3>
+                            <p class="text-gray-600 text-sm">Für Fortgeschrittene - Wörter und kurze Sätze</p>
+                        </div>
+                    </div>
+                    <div class="character-card" data-difficulty="hase">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">🐇</div>
+                            <h3 class="text-xl font-bold text-purple-700 mb-2">Lesehase</h3>
+                            <p class="text-gray-600 text-sm">Für Experten - Längere Texte und Geschichten</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Player Selection -->
+        <section id="playerScreen" class="screen">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-purple-700 mb-8 text-center">Wer spielt heute?</h2>
+                <div class="space-y-4">
+                    <button class="w-full p-6 rounded-xl border-2 border-orange-300 hover:border-orange-500 bg-gradient-to-r from-orange-100 to-yellow-100 transition-all duration-300" data-player="maja">
+                        <div class="flex items-center justify-center">
+                            <span class="text-4xl mr-4">👧</span>
+                            <span class="text-xl font-bold text-orange-700">Nur Maja</span>
+                        </div>
+                    </button>
+                    <button class="w-full p-6 rounded-xl border-2 border-blue-300 hover:border-blue-500 bg-gradient-to-r from-blue-100 to-cyan-100 transition-all duration-300" data-player="sophie">
+                        <div class="flex items-center justify-center">
+                            <span class="text-4xl mr-4">🧒</span>
+                            <span class="text-xl font-bold text-blue-700">Nur Sophie</span>
+                        </div>
+                    </button>
+                    <button class="w-full p-6 rounded-xl border-2 border-purple-300 hover:border-purple-500 bg-gradient-to-r from-purple-100 to-pink-100 transition-all duration-300" data-player="both">
+                        <div class="flex items-center justify-center">
+                            <span class="text-4xl mr-4">👧🧒</span>
+                            <span class="text-xl font-bold text-purple-700">Beide zusammen</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Story Screen -->
+        <section id="storyScreen" class="screen">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-4xl mx-auto">
+                <h2 id="storyTitle" class="text-3xl font-bold text-purple-700 mb-6 text-center">Die Geschichte geht weiter...</h2>
+                <div id="storyImageContainer" class="text-center mb-6" style="display: none;">
+                    <img id="storyImage" src="" alt="Bild zur Geschichte" class="story-image mx-auto">
+                </div>
+                <div id="storyTextArea" class="text-lg leading-relaxed text-gray-700 mb-6 p-6 bg-gray-50 rounded-lg">
+                    Lädt Geschichte...
+                </div>
+                <div id="crunellaReaction" class="bg-purple-100 p-4 rounded-lg mb-6" style="display: none;">
+                    <div class="flex items-center">
+                        <span class="text-3xl mr-3">🧙‍♀️</span>
+                        <div>
+                            <h4 class="font-bold text-purple-700">Crunella sagt:</h4>
+                            <p id="crunellaText" class="text-purple-600"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button id="continueStoryBtn" class="game-button bg-green-500 hover:bg-green-600 focus:ring-green-400">
+                        <i class="fas fa-arrow-right mr-2"></i>Weiter zum Spiel
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Daily Hub -->
+        <section id="dailyHubScreen" class="screen">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-6xl mx-auto">
+                <h2 id="dailyTitle" class="text-3xl font-bold text-purple-700 mb-8 text-center">Tag 1: Wähle ein Spiel!</h2>
+                <div id="dailyGamesMenu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Games will be populated here -->
+                </div>
+                <div class="text-center">
+                    <button id="nextDayBtn" class="game-button bg-orange-500 hover:bg-orange-600 focus:ring-orange-400" style="display: none;">
+                        <i class="fas fa-arrow-right mr-2"></i>Nächster Tag
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Game Screen -->
+        <section id="activeGameScreen" class="screen">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <button id="backToHubBtn" class="game-button bg-gray-500 hover:bg-gray-600 focus:ring-gray-400">
+                        <i class="fas fa-arrow-left mr-2"></i>Zurück
+                    </button>
+                    <h2 id="activeGameTitle" class="text-2xl font-bold text-purple-700">Spielname</h2>
+                    <div class="text-sm text-gray-600">
+                        <span id="gameTimer">00:00</span>
+                    </div>
+                </div>
+                <div id="activeGameContent" class="mb-6">
+                    <!-- Game content will be populated here -->
+                </div>
+                <div id="gameFeedback" class="text-center font-semibold text-lg h-8"></div>
+            </div>
+        </section>
+
+        <!-- Help/Tutorial Screen -->
+        <section id="helpScreen" class="screen">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-green-700">Hilfe & Tutorial</h2>
+                    <button id="closeHelpBtn" class="game-button bg-red-500 hover:bg-red-600 focus:ring-red-400">
+                        <i class="fas fa-times mr-2"></i>Schließen
+                    </button>
+                </div>
+                <div id="helpContent">
+                    <!-- Help content will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Parent Area -->
+        <section id="parentAreaScreen" class="screen">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-green-700">Elternbereich</h2>
+                    <button id="closeParentAreaBtn" class="game-button bg-red-500 hover:bg-red-600 focus:ring-red-400">
+                        <i class="fas fa-times mr-2"></i>Schließen
+                    </button>
+                </div>
+                <div id="parentContent">
+                    <!-- Parent content will be populated here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/gameState.js"></script>
+    <script src="js/contentData.js"></script>
+    <script src="js/audioManager.js"></script>
+    <script src="js/uiManager.js"></script>
+    <script src="js/gameManager.js"></script>
+    <script src="js/games/Game_AlphabetIntroduction.js"></script>
+    <script src="js/games/Game_LetterBingo.js"></script>
+    <script src="js/games/Game_Memory.js"></script>
+    <script src="js/games/Game_WordPuzzle.js"></script>
+    <script src="js/games/Game_StoryReading.js"></script>
+    <script src="js/games/Game_MathBasics.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
