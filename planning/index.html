@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maya, Sophie & der Fluch der Hexe Crunella - Lernspiel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Magische Animation und Custom Styles */
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.7; transform: scale(1.1) rotate(180deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes shake-error {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .magical-sparkle {
+            animation: sparkle 2s infinite;
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .memory-card {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            backface-visibility: hidden;
+        }
+        
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        
+        /* Responsive Text Sizes */
+        .text-responsive {
+            font-size: clamp(0.875rem, 2vw, 1.125rem);
+        }
+        
+        /* Character Images */
+        .character-img {
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 10px;
+            height: 20px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 min-h-screen">
+    <!-- Navigation Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="magical-sparkle">
+                        <i class="fas fa-magic text-3xl text-yellow-300"></i>
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-bold">Maya & Sophie Lernspiel</h1>
+                </div>
+                <nav class="flex space-x-4">
+                    <button onclick="showSection('home')" class="nav-btn bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-home mr-2"></i>Start
+                    </button>
+                    <button onclick="showSection('manual')" class="nav-btn bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-book mr-2"></i>Handbuch
+                    </button>
+                    <button onclick="showSection('parent')" class="nav-btn bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-users mr-2"></i>Eltern
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="text-center mb-8">
+                <div class="bg-white rounded-xl shadow-xl p-8 max-w-4xl mx-auto">
+                    <div class="floating mb-6">
+                        <h2 class="text-4xl md:text-5xl font-bold text-purple-600 mb-4">
+                            Willkommen im magischen Leseabenteuer!
+                        </h2>
+                    </div>
+                    
+                    <!-- Character Introduction -->
+                    <div class="grid md:grid-cols-3 gap-6 mb-8">
+                        <div class="character-card text-center">
+                            <img src="https://placehold.co/150x150/FFB6C1/333333?text=Maja" alt="Maja" class="character-img w-32 h-32 mx-auto mb-4">
+                            <h3 class="text-xl font-bold text-purple-600">Maja (6 Jahre)</h3>
+                            <p class="text-gray-600">Die mutige große Schwester, die lesen lernt</p>
+                        </div>
+                        <div class="character-card text-center">
+                            <img src="https://placehold.co/150x150/FFE4E1/333333?text=Sophie" alt="Sophie" class="character-img w-32 h-32 mx-auto mb-4">
+                            <h3 class="text-xl font-bold text-pink-600">Sophie (4 Jahre)</h3>
+                            <p class="text-gray-600">Die verspielte kleine Schwester</p>
+                        </div>
+                        <div class="character-card text-center">
+                            <img src="https://placehold.co/150x150/87CEEB/333333?text=Luca" alt="Luca" class="character-img w-32 h-32 mx-auto mb-4">
+                            <h3 class="text-xl font-bold text-blue-600">Luca (1 Jahr)</h3>
+                            <p class="text-gray-600">Der kleine Bruder in Gefahr</p>
+                        </div>
+                    </div>
+
+                    <!-- Story Introduction -->
+                    <div class="bg-purple-50 rounded-lg p-6 mb-6">
+                        <h3 class="text-2xl font-bold text-purple-700 mb-4">Die Geschichte</h3>
+                        <p class="text-lg text-gray-700 leading-relaxed">
+                            Hexe Crunella hat einen bösen Fluch über Baby Luca gelegt! Er wird in ein Schulheft verwandelt, 
+                            es sei denn, Maja lernt rechtzeitig lesen und kann das magische Zauberbuch der Urahnen verstehen. 
+                            Hilfst du Maja beim Lesenlernen, um ihren kleinen Bruder zu retten?
+                        </p>
+                    </div>
+
+                    <!-- Difficulty Selection -->
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-purple-700 mb-4">Wähle dein Leselevel:</h3>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <button onclick="setDifficulty('buchstabenentdecker')" class="difficulty-btn card-hover bg-green-200 hover:bg-green-300 p-4 rounded-lg border-2 border-green-400">
+                                <i class="fas fa-seedling text-2xl text-green-600 mb-2"></i>
+                                <h4 class="font-bold text-green-700">Buchstabenentdecker</h4>
+                                <p class="text-sm text-green-600">Ich lerne gerade die Buchstaben</p>
+                            </button>
+                            <button onclick="setDifficulty('leseanfaenger')" class="difficulty-btn card-hover bg-yellow-200 hover:bg-yellow-300 p-4 rounded-lg border-2 border-yellow-400">
+                                <i class="fas fa-star text-2xl text-yellow-600 mb-2"></i>
+                                <h4 class="font-bold text-yellow-700">Leseanfänger</h4>
+                                <p class="text-sm text-yellow-600">Ich kann schon einige Wörter lesen</p>
+                            </button>
+                            <button onclick="setDifficulty('lesehase')" class="difficulty-btn card-hover bg-blue-200 hover:bg-blue-300 p-4 rounded-lg border-2 border-blue-400">
+                                <i class="fas fa-rocket text-2xl text-blue-600 mb-2"></i>
+                                <h4 class="font-bold text-blue-700">Lesehase</h4>
+                                <p class="text-sm text-blue-600">Ich lese schon gut</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="startGame()" class="btn-primary bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg text-xl font-bold transition-all transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>Abenteuer beginnen!
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Interface -->
+            <div id="game-interface" class="hidden">
+                <!-- Progress Bar -->
+                <div class="bg-white rounded-lg shadow-lg p-4 mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-lg font-bold text-purple-700">Tag <span id="current-day">1</span> von 35</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-yellow-500"><i class="fas fa-star"></i></span>
+                            <span id="total-points" class="font-bold">0 Punkte</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-200 rounded-full h-4">
+                        <div id="progress-bar" class="progress-bar h-4 rounded-full" style="width: 3%"></div>
+                    </div>
+                </div>
+
+                <!-- Daily Story Section -->
+                <div id="daily-story" class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h3 class="text-2xl font-bold text-purple-700 mb-4">
+                        <i class="fas fa-book-open mr-2"></i>Heutige Geschichte
+                    </h3>
+                    <div class="story-image-container mb-4">
+                        <img id="story-image" src="https://placehold.co/600x350/A0C4FF/333333?text=Tag+1+Geschichte" alt="Tagesgeschichte" class="story-image">
+                    </div>
+                    <div class="story-text-area">
+                        <h4 id="story-title" class="text-xl font-bold text-purple-600 mb-3">Der unheimliche Brief und Crunellas Fluch</h4>
+                        <p id="story-content" class="text-responsive leading-relaxed">
+                            Es ist ein warmer Sommertag und Maja spielt mit ihrer kleinen Schwester Sophie im Garten...
+                        </p>
+                    </div>
+                    <div class="mt-4 flex justify-center">
+                        <button onclick="playStoryAudio()" class="btn-secondary bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            <i class="fas fa-play mr-2"></i>Geschichte vorlesen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Games Section -->
+                <div id="games-section" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Game cards will be populated by JavaScript -->
+                </div>
+
+                <!-- Witch Reaction -->
+                <div id="witch-reaction" class="bg-purple-800 text-white p-4 rounded-lg mb-6 hidden">
+                    <div class="flex items-center">
+                        <div class="magical-sparkle mr-4">
+                            <i class="fas fa-hat-wizard text-2xl text-purple-300"></i>
+                        </div>
+                        <p id="witch-message" class="italic"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Manual Section -->
+        <section id="manual" class="section hidden">
+            <div class="bg-white rounded-xl shadow-xl p-8 max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-purple-600 mb-6">
+                    <i class="fas fa-book mr-3"></i>Benutzerhandbuch
+                </h2>
+                
+                <!-- Table of Contents -->
+                <div class="bg-blue-50 rounded-lg p-6 mb-8">
+                    <h3 class="text-xl font-bold text-blue-700 mb-4">Inhaltsverzeichnis</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#manual-intro" class="text-blue-600 hover:underline">1. Einführung</a></li>
+                        <li><a href="#manual-story" class="text-blue-600 hover:underline">2. Die Geschichte</a></li>
+                        <li><a href="#manual-games" class="text-blue-600 hover:underline">3. Spiele und Aktivitäten</a></li>
+                        <li><a href="#manual-progress" class="text-blue-600 hover:underline">4. Fortschritt und Bewertung</a></li>
+                        <li><a href="#manual-parent" class="text-blue-600 hover:underline">5. Elternbereich</a></li>
+                        <li><a href="#manual-tips" class="text-blue-600 hover:underline">6. Tipps für Eltern</a></li>
+                    </ul>
+                </div>
+
+                <!-- Manual Content -->
+                <div class="space-y-8 custom-scrollbar">
+                    <section id="manual-intro">
+                        <h3 class="text-2xl font-bold text-purple-700 mb-4">1. Einführung</h3>
+                        <div class="prose max-w-none">
+                            <p class="text-gray-700 leading-relaxed mb-4">
+                                "Maya, Sophie & der Fluch der Hexe Crunella" ist ein interaktives Lernspiel, das Kindern im Alter von 5-8 Jahren 
+                                dabei hilft, das Lesen zu lernen. Das Spiel kombiniert eine spannende Geschichte mit verschiedenen Lernspielen 
+                                und ist an den Lehrplan für die Grundschule angepasst.
+                            </p>
+                            <h4 class="text-lg font-semibold text-purple-600 mb-2">Lernziele:</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                <li>Buchstabenerkennung und Laut-Buchstaben-Zuordnung</li>
+                                <li>Silbenbewusstsein entwickeln</li>
+                                <li>Wortschatz erweitern</li>
+                                <li>Erstes Leseverständnis fördern</li>
+                                <li>Freude am Lesen vermitteln</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section id="manual-story">
+                        <h3 class="text-2xl font-bold text-purple-700 mb-4">2. Die Geschichte</h3>
+                        <div class="bg-purple-50 rounded-lg p-6">
+                            <p class="text-gray-700 leading-relaxed mb-4">
+                                Die böse Hexe Crunella hat einen Fluch über Baby Luca gelegt. Er wird in ein Schulheft verwandelt, 
+                                es sei denn, seine große Schwester Maja lernt rechtzeitig lesen. Nur wer das magische Zauberbuch 
+                                der Urahnen verstehen kann, kann Crunella besiegen.
+                            </p>
+                            <h4 class="text-lg font-semibold text-purple-600 mb-2">Die Charaktere:</h4>
+                            <div class="grid md:grid-cols-3 gap-4 mt-4">
+                                <div class="text-center">
+                                    <h5 class="font-bold text-purple-600">Maja (6 Jahre)</h5>
+                                    <p class="text-sm text-gray-600">Die Hauptheldin, die lesen lernt</p>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="font-bold text-pink-600">Sophie (4 Jahre)</h5>
+                                    <p class="text-sm text-gray-600">Majas kleine Schwester und Begleiterin</p>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="font-bold text-blue-600">Luca (1 Jahr)</h5>
+                                    <p class="text-sm text-gray-600">Der kleine Bruder, der gerettet werden muss</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="manual-games">
+                        <h3 class="text-2xl font-bold text-purple-700 mb-4">3. Spiele und Aktivitäten</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-green-50 rounded-lg p-4">
+                                <h4 class="font-bold text-green-700 mb-2">
+                                    <i class="fas fa-font mr-2"></i>Buchstaben Memory
+                                </h4>
+                                <p class="text-sm text-gray-700">Lerne neue Buchstaben kennen und finde die passenden Paare.</p>
+                            </div>
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <h4 class="font-bold text-blue-700 mb-2">
+                                    <i class="fas fa-search mr-2"></i>Buchstaben Bingo
+                                </h4>
+                                <p class="text-sm text-gray-700">Finde Wörter und Bilder, die mit bestimmten Buchstaben beginnen.</p>
+                            </div>
+                            <div class="bg-yellow-50 rounded-lg p-4">
+                                <h4 class="font-bold text-yellow-700 mb-2">
+                                    <i class="fas fa-hands-clapping mr-2"></i>Silben klatschen
+                                </h4>
+                                <p class="text-sm text-gray-700">Teile Wörter in Silben auf und klatsche den Rhythmus.</p>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-4">
+                                <h4 class="font-bold text-purple-700 mb-2">
+                                    <i class="fas fa-treasure-chest mr-2"></i>Schatzsuche
+                                </h4>
+                                <p class="text-sm text-gray-700">Folge den Hinweisen und sammle Buchstaben für das Zauberbuch.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="manual-progress">
+                        <h3 class="text-2xl font-bold text-purple-700 mb-4">4. Fortschritt und Bewertung</h3>
+                        <div class="bg-blue-50 rounded-lg p-6">
+                            <h4 class="text-lg font-semibold text-blue-700 mb-3">Schwierigkeitsstufen:</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <i class="fas fa-seedling text-green-500 mr-3"></i>
+                                    <div>
+                                        <strong>Buchstabenentdecker:</strong> Für Kinder, die gerade die Buchstaben lernen
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-star text-yellow-500 mr-3"></i>
+                                    <div>
+                                        <strong>Leseanfänger:</strong> Für Kinder, die schon einige Wörter lesen können
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-rocket text-blue-500 mr-3"></i>
+                                    <div>
+                                        <strong>Lesehase:</strong> Für Kinder, die bereits gut lesen können
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="manual-parent">
+                        <h3 class="text-2xl font-bold text-purple-700 mb-4">5. Elternbereich</h3>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            Der Elternbereich bietet Ihnen die Möglichkeit, den Lernfortschritt Ihres Kindes zu verfolgen 
+                            und zusätzliche Lernmaterialien zu verwalten.
+                        </p>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h4 class="font-bold text-gray-700 mb-2">Fortschrittsübersicht</h4>
+                                <p class="text-sm text-gray-600">Sehen Sie, welche Buchstaben gelernt und welche Spiele gespielt wurden.</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h4 class="font-bold text-gray-700 mb-2">Lesetagebuch</h4>
+                                <p class="text-sm text-gray-600">Tragen Sie zusätzliche Leseaktivitäten ein.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="manual-tips">
+                        <h3 class="text-2xl font-bold text-purple-700 mb-4">6. Tipps für Eltern</h3>
+                        <div class="bg-green-50 rounded-lg p-6">
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                    <span>Spielen Sie gemeinsam mit Ihrem Kind und feiern Sie kleine Erfolge</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                    <span>Nutzen Sie die Vorlesefunktion, wenn Ihr Kind noch nicht alle Texte lesen kann</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                    <span>Machen Sie Pausen, wenn Ihr Kind müde wird</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                    <span>Ermutigen Sie Ihr Kind, auch außerhalb des Spiels zu lesen</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parent Section -->
+        <section id="parent" class="section hidden">
+            <div class="bg-white rounded-xl shadow-xl p-8 max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-purple-600 mb-6">
+                    <i class="fas fa-users mr-3"></i>Elternbereich
+                </h2>
+                
+                <!-- Progress Overview -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-blue-50 rounded-lg p-6 text-center">
+                        <i class="fas fa-calendar-day text-3xl text-blue-500 mb-3"></i>
+                        <h3 class="text-xl font-bold text-blue-700">Aktueller Tag</h3>
+                        <p id="parent-current-day" class="text-2xl font-bold text-blue-600">1</p>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-6 text-center">
+                        <i class="fas fa-font text-3xl text-green-500 mb-3"></i>
+                        <h3 class="text-xl font-bold text-green-700">Gelernte Buchstaben</h3>
+                        <p id="parent-letters-learned" class="text-2xl font-bold text-green-600">4</p>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-6 text-center">
+                        <i class="fas fa-gamepad text-3xl text-yellow-500 mb-3"></i>
+                        <h3 class="text-xl font-bold text-yellow-700">Spiele gespielt</h3>
+                        <p id="parent-games-played" class="text-2xl font-bold text-yellow-600">8</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-6 text-center">
+                        <i class="fas fa-star text-3xl text-purple-500 mb-3"></i>
+                        <h3 class="text-xl font-bold text-purple-700">Gesammelte Punkte</h3>
+                        <p id="parent-total-points" class="text-2xl font-bold text-purple-600">0</p>
+                    </div>
+                </div>
+
+                <!-- Reading Diary -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                    <h3 class="text-xl font-bold text-gray-700 mb-4">
+                        <i class="fas fa-book-reader mr-2"></i>Lesetagebuch
+                    </h3>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            Was hat Ihr Kind heute gelesen?
+                        </label>
+                        <textarea id="reading-entry" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Z.B. 'Maja hat heute das Wort MAMA gelesen'"></textarea>
+                    </div>
+                    <button onclick="addReadingEntry()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-plus mr-2"></i>Eintrag hinzufügen
+                    </button>
+                    
+                    <div id="reading-entries" class="mt-6 space-y-3">
+                        <!-- Reading entries will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Custom Word Lists -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-700 mb-4">
+                        <i class="fas fa-list mr-2"></i>Eigene Wortlisten
+                    </h3>
+                    <div class="grid md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Nomen</label>
+                            <input type="text" id="custom-noun" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="z.B. Haus, Auto">
+                            <button onclick="addCustomWord('noun')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mt-2 text-sm">Hinzufügen</button>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Verben</label>
+                            <input type="text" id="custom-verb" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="z.B. laufen, spielen">
+                            <button onclick="addCustomWord('verb')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded mt-2 text-sm">Hinzufügen</button>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Adjektive</label>
+                            <input type="text" id="custom-adjective" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="z.B. schön, groß">
+                            <button onclick="addCustomWord('adjective')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mt-2 text-sm">Hinzufügen</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <h4 class="font-semibold text-blue-700 mb-2">Eigene Nomen</h4>
+                            <div id="custom-nouns" class="space-y-1 text-sm"></div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-700 mb-2">Eigene Verben</h4>
+                            <div id="custom-verbs" class="space-y-1 text-sm"></div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-yellow-700 mb-2">Eigene Adjektive</h4>
+                            <div id="custom-adjectives" class="space-y-1 text-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Modal -->
+        <div id="game-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-full overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 id="game-title" class="text-2xl font-bold text-purple-700"></h3>
+                        <button onclick="closeGameModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    <div id="game-content">
+                        <!-- Game content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Game Logic Script -->
+    <script>
+        // Game State
+        let gameState = {
+            currentDay: 1,
+            difficulty: 'leseanfaenger',
+            totalPoints: 0,
+            learnedLetters: ['M', 'm', 'A', 'a'],
+            gamesPlayed: 0,
+            readingEntries: [],
+            customWords: {
+                nouns: [],
+                verbs: [],
+                adjectives: []
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGameState();
+            updateProgressDisplay();
+        });
+
+        // Navigation
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionName).classList.remove('hidden');
+        }
+
+        // Difficulty Selection
+        function setDifficulty(level) {
+            gameState.difficulty = level;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-purple-400');
+            });
+            event.target.closest('.difficulty-btn').classList.add('ring-4', 'ring-purple-400');
+            saveGameState();
+        }
+
+        // Start Game
+        function startGame() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('game-interface').classList.remove('hidden');
+            loadDailyContent();
+            updateProgressDisplay();
+        }
+
+        // Load Daily Content
+        function loadDailyContent() {
+            const dayData = getDayData(gameState.currentDay);
+            
+            // Update story
+            document.getElementById('story-title').textContent = dayData.story.title;
+            document.getElementById('story-content').textContent = dayData.story.content;
+            document.getElementById('story-image').src = dayData.story.imageUrl;
+            
+            // Load games
+            loadDailyGames(dayData.games);
+            
+            // Update progress
+            updateProgressDisplay();
+        }
+
+        // Get Day Data
+        function getDayData(day) {
+            const dayDataMap = {
+                1: {
+                    letters: ['M', 'm', 'A', 'a'],
+                    story: {
+                        title: "Der unheimliche Brief und Crunellas Fluch",
+                        content: "Es ist ein warmer Sommertag und Maja spielt mit ihrer kleinen Schwester Sophie im Garten. Plötzlich entdeckt sie einen alten, versiegelten Brief unter einem Rosenbusch. Als sie ihn öffnet, erfährt sie von dem schrecklichen Fluch der Hexe Crunella über ihren kleinen Bruder Luca. Der Fluch wird zwischen Lucas 1. Geburtstag und Majas 7. Geburtstag wirksam. Nur wenn Maja rechtzeitig lesen lernt und das Zauberbuch der Urahnen verstehen kann, kann sie Crunella besiegen!",
+                        imageUrl: "https://placehold.co/600x350/A0C4FF/333333?text=Maja+liest+Brief"
+                    },
+                    games: ['alphabetIntroduction', 'letterBingo']
+                },
+                // Add more days as needed
+            };
+            
+            return dayDataMap[day] || dayDataMap[1];
+        }
+
+        // Load Daily Games
+        function loadDailyGames(gameTypes) {
+            const gamesContainer = document.getElementById('games-section');
+            gamesContainer.innerHTML = '';
+            
+            const gameInfo = {
+                alphabetIntroduction: {
+                    title: 'Buchstaben Memory',
+                    description: 'Lerne die neuen Buchstaben kennen und finde die Paare!',
+                    icon: 'fas fa-font',
+                    color: 'bg-blue-500'
+                },
+                letterBingo: {
+                    title: 'Buchstaben Bingo',
+                    description: 'Finde Wörter, die mit den gelernten Buchstaben beginnen!',
+                    icon: 'fas fa-search',
+                    color: 'bg-green-500'
+                },
+                syllableClap: {
+                    title: 'Silben klatschen',
+                    description: 'Teile Wörter in Silben auf und klatsche den Rhythmus!',
+                    icon: 'fas fa-hands-clapping',
+                    color: 'bg-yellow-500'
+                },
+                treasureHunt: {
+                    title: 'Schatzsuche',
+                    description: 'Folge den Hinweisen und sammle Buchstaben!',
+                    icon: 'fas fa-map-treasure',
+                    color: 'bg-purple-500'
+                }
+            };
+            
+            gameTypes.forEach(gameType => {
+                const game = gameInfo[gameType];
+                if (game) {
+                    const gameCard = document.createElement('div');
+                    gameCard.className = 'card-hover bg-white rounded-lg shadow-lg p-6 cursor-pointer';
+                    gameCard.onclick = () => startSpecificGame(gameType);
+                    
+                    gameCard.innerHTML = `
+                        <div class="text-center">
+                            <div class="${game.color} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="${game.icon} text-2xl text-white"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-800 mb-2">${game.title}</h4>
+                            <p class="text-gray-600 text-sm">${game.description}</p>
+                            <button class="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-all">
+                                Spielen
+                            </button>
+                        </div>
+                    `;
+                    
+                    gamesContainer.appendChild(gameCard);
+                }
+            });
+        }
+
+        // Start Specific Game
+        function startSpecificGame(gameType) {
+            document.getElementById('game-modal').classList.remove('hidden');
+            const gameContent = document.getElementById('game-content');
+            const gameTitle = document.getElementById('game-title');
+            
+            switch(gameType) {
+                case 'alphabetIntroduction':
+                    gameTitle.textContent = 'Buchstaben Memory';
+                    loadMemoryGame(gameContent);
+                    break;
+                case 'letterBingo':
+                    gameTitle.textContent = 'Buchstaben Bingo';
+                    loadBingoGame(gameContent);
+                    break;
+                default:
+                    gameTitle.textContent = 'Spiel';
+                    gameContent.innerHTML = '<p class="text-center text-gray-600">Dieses Spiel wird bald verfügbar sein!</p>';
+            }
+        }
+
+        // Memory Game
+        function loadMemoryGame(container) {
+            const letters = gameState.learnedLetters.slice(0, 4); // Current day's letters
+            const cards = [...letters, ...letters]; // Duplicate for pairs
+            shuffleArray(cards);
+            
+            let flippedCards = [];
+            let matchedPairs = 0;
+            
+            container.innerHTML = `
+                <div class="text-center mb-4">
+                    <p class="text-gray-700">Finde die passenden Buchstabenpaare!</p>
+                </div>
+                <div class="memory-grid grid grid-cols-4 gap-4 max-w-md mx-auto">
+                    ${cards.map((card, index) => `
+                        <div class="memory-card-container">
+                            <div class="memory-card cursor-pointer" data-card="${card}" data-index="${index}">
+                                <div class="card-face card-front bg-purple-500 text-white text-2xl font-bold">
+                                    ?
+                                </div>
+                                <div class="card-face card-back bg-yellow-200 text-purple-700 text-2xl font-bold">
+                                    ${card}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="text-center mt-4">
+                    <p class="text-gray-600">Gefundene Paare: <span id="matched-count">0</span>/${letters.length}</p>
+                </div>
+            `;
+            
+            // Add click listeners
+            container.querySelectorAll('.memory-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    if (this.classList.contains('flipped') || this.classList.contains('matched') || flippedCards.length >= 2) {
+                        return;
+                    }
+                    
+                    this.classList.add('flipped');
+                    flippedCards.push(this);
+                    
+                    if (flippedCards.length === 2) {
+                        setTimeout(() => {
+                            const card1 = flippedCards[0];
+                            const card2 = flippedCards[1];
+                            const letter1 = card1.dataset.card;
+                            const letter2 = card2.dataset.card;
+                            
+                            if (letter1.toLowerCase() === letter2.toLowerCase() && letter1 !== letter2) {
+                                // Match found
+                                card1.classList.add('matched');
+                                card2.classList.add('matched');
+                                matchedPairs++;
+                                document.getElementById('matched-count').textContent = matchedPairs;
+                                
+                                if (matchedPairs === letters.length / 2) {
+                                    setTimeout(() => {
+                                        showGameSuccess('Memory', 10);
+                                    }, 500);
+                                }
+                            } else {
+                                // No match
+                                card1.classList.remove('flipped');
+                                card2.classList.remove('flipped');
+                            }
+                            
+                            flippedCards = [];
+                        }, 1000);
+                    }
+                });
+            });
+        }
+
+        // Bingo Game
+        function loadBingoGame(container) {
+            const targetLetter = gameState.learnedLetters[Math.floor(Math.random() * gameState.learnedLetters.length)];
+            const words = [
+                'Mama', 'Auto', 'Apfel', 'Maus', 'Mond', 'Auge', 'Arm', 'Ameise',
+                'Ball', 'Buch', 'Baum', 'Bär', 'Elefant', 'Eis', 'Eule', 'Ei'
+            ];
+            
+            const correctWords = words.filter(word => word[0].toLowerCase() === targetLetter.toLowerCase()).slice(0, 3);
+            const wrongWords = words.filter(word => word[0].toLowerCase() !== targetLetter.toLowerCase()).slice(0, 5);
+            const allWords = [...correctWords, ...wrongWords];
+            shuffleArray(allWords);
+            
+            let foundWords = 0;
+            
+            container.innerHTML = `
+                <div class="text-center mb-6">
+                    <h4 class="text-xl font-bold text-purple-700 mb-2">Finde alle Wörter, die mit "${targetLetter.toUpperCase()}" beginnen!</h4>
+                    <p class="text-gray-600">Gefunden: <span id="found-count">0</span>/${correctWords.length}</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl mx-auto">
+                    ${allWords.map(word => `
+                        <button class="bingo-word bg-blue-100 hover:bg-blue-200 border-2 border-blue-300 rounded-lg p-4 transition-all text-lg font-semibold" data-word="${word}">
+                            ${word}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.querySelectorAll('.bingo-word').forEach(button => {
+                button.addEventListener('click', function() {
+                    const word = this.dataset.word;
+                    
+                    if (word[0].toLowerCase() === targetLetter.toLowerCase()) {
+                        // Correct
+                        this.classList.remove('bg-blue-100', 'hover:bg-blue-200', 'border-blue-300');
+                        this.classList.add('bg-green-200', 'border-green-400', 'cursor-default');
+                        this.disabled = true;
+                        foundWords++;
+                        document.getElementById('found-count').textContent = foundWords;
+                        
+                        if (foundWords === correctWords.length) {
+                            setTimeout(() => {
+                                showGameSuccess('Bingo', 15);
+                            }, 500);
+                        }
+                    } else {
+                        // Wrong
+                        this.classList.remove('bg-blue-100', 'hover:bg-blue-200', 'border-blue-300');
+                        this.classList.add('bg-red-200', 'border-red-400');
+                        setTimeout(() => {
+                            this.classList.remove('bg-red-200', 'border-red-400');
+                            this.classList.add('bg-blue-100', 'hover:bg-blue-200', 'border-blue-300');
+                        }, 1000);
+                    }
+                });
+            });
+        }
+
+        // Game Success
+        function showGameSuccess(gameName, points) {
+            gameState.totalPoints += points;
+            gameState.gamesPlayed++;
+            saveGameState();
+            updateProgressDisplay();
+            
+            const gameContent = document.getElementById('game-content');
+            gameContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="magical-sparkle mb-4">
+                        <i class="fas fa-star text-6xl text-yellow-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-green-600 mb-4">Fantastisch!</h3>
+                    <p class="text-lg text-gray-700 mb-4">Du hast das ${gameName}-Spiel gemeistert!</p>
+                    <p class="text-lg font-bold text-purple-600 mb-6">+${points} Punkte</p>
+                    <button onclick="closeGameModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg">
+                        Weiter spielen
+                    </button>
+                </div>
+            `;
+            
+            showWitchReaction(gameName);
+        }
+
+        // Witch Reaction
+        function showWitchReaction(gameName) {
+            const reactions = [
+                "Nein! Maja wird immer besser im Lesen! Das gefällt mir gar nicht!",
+                "Verflixt! Noch ein Spiel gemeistert! Mein Fluch wird schwächer!",
+                "Das kann nicht sein! Diese Kinder werden immer klüger!",
+                "Grrrr! Maja lernt zu schnell! Ich muss meinen Fluch verstärken!"
+            ];
+            
+            const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+            const witchElement = document.getElementById('witch-reaction');
+            const messageElement = document.getElementById('witch-message');
+            
+            messageElement.textContent = reaction;
+            witchElement.classList.remove('hidden');
+            
+            setTimeout(() => {
+                witchElement.classList.add('hidden');
+            }, 4000);
+        }
+
+        // Story Audio (placeholder)
+        function playStoryAudio() {
+            alert('Vorlesefunktion würde hier die Geschichte vorlesen. In einer vollständigen Implementierung würde hier Text-to-Speech oder aufgenommene Audiodateien verwendet werden.');
+        }
+
+        // Close Game Modal
+        function closeGameModal() {
+            document.getElementById('game-modal').classList.add('hidden');
+        }
+
+        // Update Progress Display
+        function updateProgressDisplay() {
+            document.getElementById('current-day').textContent = gameState.currentDay;
+            document.getElementById('total-points').textContent = gameState.totalPoints + ' Punkte';
+            document.getElementById('progress-bar').style.width = (gameState.currentDay / 35 * 100) + '%';
+            
+            // Update parent area
+            document.getElementById('parent-current-day').textContent = gameState.currentDay;
+            document.getElementById('parent-letters-learned').textContent = gameState.learnedLetters.length;
+            document.getElementById('parent-games-played').textContent = gameState.gamesPlayed;
+            document.getElementById('parent-total-points').textContent = gameState.totalPoints;
+        }
+
+        // Parent Area Functions
+        function addReadingEntry() {
+            const entry = document.getElementById('reading-entry').value.trim();
+            if (entry) {
+                const timestamp = new Date().toLocaleDateString('de-DE');
+                gameState.readingEntries.push({ date: timestamp, text: entry });
+                document.getElementById('reading-entry').value = '';
+                displayReadingEntries();
+                saveGameState();
+            }
+        }
+
+        function displayReadingEntries() {
+            const container = document.getElementById('reading-entries');
+            container.innerHTML = gameState.readingEntries.map(entry => `
+                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="text-gray-700">${entry.text}</p>
+                            <p class="text-sm text-gray-500 mt-1">${entry.date}</p>
+                        </div>
+                        <button onclick="removeReadingEntry(${gameState.readingEntries.indexOf(entry)})" class="text-red-500 hover:text-red-700 ml-2">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeReadingEntry(index) {
+            gameState.readingEntries.splice(index, 1);
+            displayReadingEntries();
+            saveGameState();
+        }
+
+        function addCustomWord(type) {
+            const inputId = `custom-${type === 'noun' ? 'noun' : type === 'verb' ? 'verb' : 'adjective'}`;
+            const word = document.getElementById(inputId).value.trim();
+            
+            if (word) {
+                const key = type === 'noun' ? 'nouns' : type === 'verb' ? 'verbs' : 'adjectives';
+                gameState.customWords[key].push(word);
+                document.getElementById(inputId).value = '';
+                displayCustomWords();
+                saveGameState();
+            }
+        }
+
+        function displayCustomWords() {
+            const containers = {
+                nouns: document.getElementById('custom-nouns'),
+                verbs: document.getElementById('custom-verbs'),
+                adjectives: document.getElementById('custom-adjectives')
+            };
+            
+            Object.keys(containers).forEach(key => {
+                containers[key].innerHTML = gameState.customWords[key].map((word, index) => `
+                    <div class="flex justify-between items-center bg-white border border-gray-200 rounded px-2 py-1">
+                        <span>${word}</span>
+                        <button onclick="removeCustomWord('${key}', ${index})" class="text-red-500 hover:text-red-700 text-xs">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function removeCustomWord(type, index) {
+            gameState.customWords[type].splice(index, 1);
+            displayCustomWords();
+            saveGameState();
+        }
+
+        // Utility Functions
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function saveGameState() {
+            localStorage.setItem('mayaSophieGameState', JSON.stringify(gameState));
+        }
+
+        function loadGameState() {
+            const saved = localStorage.getItem('mayaSophieGameState');
+            if (saved) {
+                gameState = { ...gameState, ...JSON.parse(saved) };
+            }
+            displayReadingEntries();
+            displayCustomWords();
+        }
+    </script>
+</body>
+</html>

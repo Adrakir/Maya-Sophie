@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maya-Sophie Elternbereich</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .parent-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .parent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-left-color: #8B5CF6;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .progress-ring {
+            transition: stroke-dasharray 0.5s ease;
+        }
+        
+        .achievement-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .tab-content {
+            min-height: 500px;
+        }
+        
+        .learning-tip {
+            border-left: 4px solid #10B981;
+            background: linear-gradient(90deg, #ECFDF5 0%, #F0FDF4 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Parent Dashboard Header -->
+    <header class="bg-white shadow-lg border-b-4 border-purple-500">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-purple-100 p-3 rounded-full">
+                        <i class="fas fa-users text-2xl text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Elternbereich</h1>
+                        <p class="text-gray-600">Maya-Sophie Lernspiel Dashboard</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600">Angemeldet als</p>
+                        <p class="font-semibold text-gray-800" id="parent-name">Adrakir</p>
+                    </div>
+                    <button onclick="exportProgress()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                    <button onclick="showSettings()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-cog mr-2"></i>Einstellungen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <!-- Quick Stats Overview -->
+        <section class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="stat-card rounded-xl p-6 text-center">
+                    <div class="text-4xl mb-2">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-1">Aktueller Tag</h3>
+                    <p id="current-day-stat" class="text-3xl font-bold">1</p>
+                    <p class="text-sm opacity-90">von 35 Tagen</p>
+                </div>
+                
+                <div class="stat-card rounded-xl p-6 text-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="text-4xl mb-2">
+                        <i class="fas fa-font"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-1">Buchstaben gelernt</h3>
+                    <p id="letters-learned-stat" class="text-3xl font-bold">4</p>
+                    <p class="text-sm opacity-90">von 26 Buchstaben</p>
+                </div>
+                
+                <div class="stat-card rounded-xl p-6 text-center" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="text-4xl mb-2">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-1">Spiele gespielt</h3>
+                    <p id="games-played-stat" class="text-3xl font-bold">0</p>
+                    <p class="text-sm opacity-90">Erfolgsquote: <span id="success-rate">0%</span></p>
+                </div>
+                
+                <div class="stat-card rounded-xl p-6 text-center" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <div class="text-4xl mb-2">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-1">Punkte gesammelt</h3>
+                    <p id="total-points-stat" class="text-3xl font-bold">0</p>
+                    <p class="text-sm opacity-90">Durchschnitt/Tag: <span id="points-per-day">0</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab Navigation -->
+        <section class="mb-8">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <nav class="flex space-x-0 border-b border-gray-200">
+                    <button onclick="showTab('progress')" class="tab-btn active flex-1 px-6 py-4 text-center font-medium transition-all hover:bg-gray-50">
+                        <i class="fas fa-chart-line mr-2"></i>Fortschritt
+                    </button>
+                    <button onclick="showTab('reading-diary')" class="tab-btn flex-1 px-6 py-4 text-center font-medium transition-all hover:bg-gray-50">
+                        <i class="fas fa-book-reader mr-2"></i>Lesetagebuch
+                    </button>
+                    <button onclick="showTab('custom-content')" class="tab-btn flex-1 px-6 py-4 text-center font-medium transition-all hover:bg-gray-50">
+                        <i class="fas fa-edit mr-2"></i>Eigene Inhalte
+                    </button>
+                    <button onclick="showTab('analytics')" class="tab-btn flex-1 px-6 py-4 text-center font-medium transition-all hover:bg-gray-50">
+                        <i class="fas fa-analytics mr-2"></i>Auswertung
+                    </button>
+                    <button onclick="showTab('tips')" class="tab-btn flex-1 px-6 py-4 text-center font-medium transition-all hover:bg-gray-50">
+                        <i class="fas fa-lightbulb mr-2"></i>Tipps
+                    </button>
+                </nav>
+
+                <!-- Progress Tab -->
+                <div id="progress-tab" class="tab-content p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Lernfortschritt</h2>
+                    
+                    <!-- Learning Progress Overview -->
+                    <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                        <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-route mr-2 text-purple-600"></i>
+                                Lernreise Übersicht
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Gesamtfortschritt</span>
+                                    <div class="flex items-center">
+                                        <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                            <div id="overall-progress" class="bg-purple-600 h-2 rounded-full" style="width: 3%"></div>
+                                        </div>
+                                        <span id="progress-percentage" class="text-sm font-medium">3%</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Alphabet Fortschritt</span>
+                                    <div class="flex items-center">
+                                        <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                            <div id="alphabet-progress" class="bg-green-600 h-2 rounded-full" style="width: 15%"></div>
+                                        </div>
+                                        <span id="alphabet-percentage" class="text-sm font-medium">15%</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Lesefähigkeiten</span>
+                                    <div class="flex items-center">
+                                        <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                            <div id="reading-skills-progress" class="bg-blue-600 h-2 rounded-full" style="width: 10%"></div>
+                                        </div>
+                                        <span id="reading-skills-percentage" class="text-sm font-medium">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-trophy mr-2 text-yellow-600"></i>
+                                Erfolge & Meilensteine
+                            </h3>
+                            <div id="achievements-list" class="space-y-3">
+                                <!-- Achievements werden hier dynamisch eingefügt -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Letter Progress -->
+                    <div class="parent-card bg-white p-6 rounded-lg shadow-md mb-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                            <i class="fas fa-font mr-2 text-indigo-600"></i>
+                            Buchstaben Fortschritt
+                        </h3>
+                        <div id="letter-progress-grid" class="grid grid-cols-6 md:grid-cols-13 gap-2">
+                            <!-- Buchstaben werden hier dynamisch eingefügt -->
+                        </div>
+                    </div>
+
+                    <!-- Game Performance -->
+                    <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                            <i class="fas fa-gamepad mr-2 text-green-600"></i>
+                            Spiel-Performance
+                        </h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <canvas id="games-chart" width="400" height="200"></canvas>
+                            </div>
+                            <div id="game-stats" class="space-y-4">
+                                <!-- Spiel-Statistiken werden hier eingefügt -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reading Diary Tab -->
+                <div id="reading-diary-tab" class="tab-content p-6 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Lesetagebuch</h2>
+                    
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <!-- Add Entry Form -->
+                        <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-plus mr-2 text-green-600"></i>
+                                Neuen Eintrag hinzufügen
+                            </h3>
+                            <form onsubmit="addReadingEntry(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Was hat Ihr Kind gelesen?
+                                    </label>
+                                    <textarea id="reading-text" 
+                                              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                                              rows="3" 
+                                              placeholder="z.B. 'Maja hat heute das Wort MAMA gelesen und war sehr stolz darauf'"></textarea>
+                                </div>
+                                
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Kategorie
+                                        </label>
+                                        <select id="reading-category" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                            <option value="buchstaben">Buchstaben</option>
+                                            <option value="woerter">Wörter</option>
+                                            <option value="saetze">Sätze</option>
+                                            <option value="geschichte">Geschichte</option>
+                                            <option value="sonstiges">Sonstiges</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Schwierigkeit
+                                        </label>
+                                        <select id="reading-difficulty" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                            <option value="einfach">Einfach</option>
+                                            <option value="mittel">Mittel</option>
+                                            <option value="schwer">Schwer</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Stimmung beim Lesen
+                                    </label>
+                                    <div class="flex space-x-2">
+                                        <button type="button" onclick="setMood('begeistert')" class="mood-btn p-2 border rounded-lg hover:bg-gray-50">
+                                            😍 Begeistert
+                                        </button>
+                                        <button type="button" onclick="setMood('freudig')" class="mood-btn p-2 border rounded-lg hover:bg-gray-50">
+                                            😊 Freudig
+                                        </button>
+                                        <button type="button" onclick="setMood('neutral')" class="mood-btn p-2 border rounded-lg hover:bg-gray-50">
+                                            😐 Neutral
+                                        </button>
+                                        <button type="button" onclick="setMood('frustriert')" class="mood-btn p-2 border rounded-lg hover:bg-gray-50">
+                                            😔 Frustriert
+                                        </button>
+                                    </div>
+                                    <input type="hidden" id="selected-mood" value="freudig">
+                                </div>
+                                
+                                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg font-medium">
+                                    <i class="fas fa-save mr-2"></i>Eintrag speichern
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Reading Statistics -->
+                        <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-chart-bar mr-2 text-blue-600"></i>
+                                Lese-Statistiken
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-gray-600">Einträge gesamt</span>
+                                    <span id="total-entries" class="font-bold text-gray-800">0</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-gray-600">Diese Woche</span>
+                                    <span id="entries-this-week" class="font-bold text-gray-800">0</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-gray-600">Lieblingskategorie</span>
+                                    <span id="favorite-category" class="font-bold text-gray-800">-</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-gray-600">Durchschnittsstimmung</span>
+                                    <span id="average-mood" class="font-bold text-gray-800">😊</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reading Entries List -->
+                    <div class="parent-card bg-white p-6 rounded-lg shadow-md mt-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-700">
+                                <i class="fas fa-list mr-2 text-purple-600"></i>
+                                Alle Einträge
+                            </h3>
+                            <div class="flex space-x-2">
+                                <select id="filter-category" onchange="filterEntries()" class="p-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">Alle Kategorien</option>
+                                    <option value="buchstaben">Buchstaben</option>
+                                    <option value="woerter">Wörter</option>
+                                    <option value="saetze">Sätze</option>
+                                    <option value="geschichte">Geschichte</option>
+                                    <option value="sonstiges">Sonstiges</option>
+                                </select>
+                                <button onclick="exportReadingDiary()" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm">
+                                    <i class="fas fa-download mr-1"></i>Export
+                                </button>
+                            </div>
+                        </div>
+                        <div id="reading-entries-list" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- Einträge werden hier dynamisch eingefügt -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Content Tab -->
+                <div id="custom-content-tab" class="tab-content p-6 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Eigene Lerninhalte</h2>
+                    
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <!-- Word Lists -->
+                        <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-list-ul mr-2 text-green-600"></i>
+                                Eigene Wortlisten
+                            </h3>
+                            
+                            <div class="mb-6">
+                                <div class="grid grid-cols-3 gap-2 mb-4">
+                                    <input type="text" id="custom-noun" placeholder="Nomen (z.B. Haus)" 
+                                           class="p-2 border border-gray-300 rounded-lg text-sm">
+                                    <input type="text" id="custom-verb" placeholder="Verb (z.B. laufen)" 
+                                           class="p-2 border border-gray-300 rounded-lg text-sm">
+                                    <input type="text" id="custom-adjective" placeholder="Adjektiv (z.B. schön)" 
+                                           class="p-2 border border-gray-300 rounded-lg text-sm">
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button onclick="addCustomWord('noun')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm">
+                                        <i class="fas fa-plus mr-1"></i>Nomen
+                                    </button>
+                                    <button onclick="addCustomWord('verb')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm">
+                                        <i class="fas fa-plus mr-1"></i>Verb
+                                    </button>
+                                    <button onclick="addCustomWord('adjective')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg text-sm">
+                                        <i class="fas fa-plus mr-1"></i>Adjektiv
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <h4 class="font-semibold text-blue-700 mb-2 text-sm">Nomen</h4>
+                                    <div id="custom-nouns-list" class="space-y-1 max-h-32 overflow-y-auto">
+                                        <!-- Nomen werden hier eingefügt -->
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-green-700 mb-2 text-sm">Verben</h4>
+                                    <div id="custom-verbs-list" class="space-y-1 max-h-32 overflow-y-auto">
+                                        <!-- Verben werden hier eingefügt -->
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-yellow-700 mb-2 text-sm">Adjektive</h4>
+                                    <div id="custom-adjectives-list" class="space-y-1 max-h-32 overflow-y-auto">
+                                        <!-- Adjektive werden hier eingefügt -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Stories -->
+                        <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-book mr-2 text-purple-600"></i>
+                                Eigene Geschichten
+                            </h3>
+                            
+                            <form onsubmit="addCustomStory(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Titel</label>
+                                    <input type="text" id="story-title" 
+                                           class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                           placeholder="z.B. Meine Familie">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Geschichte</label>
+                                    <textarea id="story-content" 
+                                              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                                              rows="4" 
+                                              placeholder="Schreiben Sie eine kurze Geschichte mit einfachen Wörtern..."></textarea>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Schwierigkeit</label>
+                                    <select id="story-difficulty" class="w-full p-2 border border-gray-300 rounded-lg">
+                                        <option value="buchstabenentdecker">Buchstabenentdecker</option>
+                                        <option value="leseanfaenger">Leseanfänger</option>
+                                        <option value="lesehase">Lesehase</option>
+                                    </select>
+                                </div>
+                                
+                                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+                                    <i class="fas fa-save mr-2"></i>Geschichte speichern
+                                </button>
+                            </form>
+
+                            <div class="mt-6">
+                                <h4 class="font-semibold text-gray-700 mb-3">Gespeicherte Geschichten</h4>
+                                <div id="custom-stories-list" class="space-y-2 max-h-32 overflow-y-auto">
+                                    <!-- Geschichten werden hier eingefügt -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics-tab" class="tab-content p-6 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Detaillierte Auswertung</h2>
+                    
+                    <!-- Time Analysis -->
+                    <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                        <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-clock mr-2 text-blue-600"></i>
+                                Zeitanalyse
+                            </h3>
+                            <canvas id="time-chart" width="400" height="200"></canvas>
+                        </div>
+
+                        <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-target mr-2 text-red-600"></i>
+                                Lernziele
+                            </h3>
+                            <div id="learning-goals" class="space-y-3">
+                                <!-- Lernziele werden hier eingefügt -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Performance -->
+                    <div class="parent-card bg-white p-6 rounded-lg shadow-md mb-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                            <i class="fas fa-chart-line mr-2 text-green-600"></i>
+                            Leistungsentwicklung
+                        </h3>
+                        <canvas id="performance-chart" width="800" height="300"></canvas>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                            <i class="fas fa-robot mr-2 text-purple-600"></i>
+                            KI-Empfehlungen
+                        </h3>
+                        <div id="ai-recommendations" class="space-y-4">
+                            <!-- KI-Empfehlungen werden hier eingefügt -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips Tab -->
+                <div id="tips-tab" class="tab-content p-6 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Pädagogische Tipps & Hilfen</h2>
+                    
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <!-- Daily Tips -->
+                        <div class="space-y-6">
+                            <div class="learning-tip p-6 rounded-lg">
+                                <h3 class="text-lg font-semibold text-green-800 mb-3">
+                                    <i class="fas fa-lightbulb mr-2"></i>
+                                    Tipp des Tages
+                                </h3>
+                                <p id="daily-tip" class="text-green-700">
+                                    Lesen Sie gemeinsam mit Ihrem Kind und feiern Sie kleine Erfolge. 
+                                    Positive Verstärkung motiviert am besten!
+                                </p>
+                            </div>
+
+                            <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                    <i class="fas fa-question-circle mr-2 text-blue-600"></i>
+                                    Häufige Fragen
+                                </h3>
+                                <div class="space-y-3">
+                                    <details class="group">
+                                        <summary class="cursor-pointer text-blue-600 hover:text-blue-800 font-medium">
+                                            Wie oft sollte mein Kind täglich spielen?
+                                        </summary>
+                                        <p class="mt-2 text-gray-600 pl-4">
+                                            15-30 Minuten täglich sind optimal. Qualität ist wichtiger als Quantität.
+                                        </p>
+                                    </details>
+                                    
+                                    <details class="group">
+                                        <summary class="cursor-pointer text-blue-600 hover:text-blue-800 font-medium">
+                                            Was tun, wenn mein Kind frustriert ist?
+                                        </summary>
+                                        <p class="mt-2 text-gray-600 pl-4">
+                                            Machen Sie eine Pause, wechseln Sie zu einem einfacheren Spiel oder lesen Sie zusammen vor.
+                                        </p>
+                                    </details>
+                                    
+                                    <details class="group">
+                                        <summary class="cursor-pointer text-blue-600 hover:text-blue-800 font-medium">
+                                            Wie kann ich den Fortschritt unterstützen?
+                                        </summary>
+                                        <p class="mt-2 text-gray-600 pl-4">
+                                            Integrieren Sie das Lesen in den Alltag: Straßenschilder, Einkaufslisten, Buchstaben suchen.
+                                        </p>
+                                    </details>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resource Library -->
+                        <div class="space-y-6">
+                            <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                    <i class="fas fa-book-open mr-2 text-purple-600"></i>
+                                    Zusätzliche Ressourcen
+                                </h3>
+                                <div class="space-y-3">
+                                    <a href="#" class="block p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-download text-green-600 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Buchstaben-Arbeitsblätter</h4>
+                                                <p class="text-sm text-gray-600">PDF zum Ausdrucken</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    
+                                    <a href="#" class="block p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-video text-blue-600 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Lern-Videos</h4>
+                                                <p class="text-sm text-gray-600">Unterstützende Videos</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    
+                                    <a href="#" class="block p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-gamepad text-purple-600 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Offline-Spiele</h4>
+                                                <p class="text-sm text-gray-600">Spiele für unterwegs</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="parent-card bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                                    <i class="fas fa-users mr-2 text-orange-600"></i>
+                                    Community & Support
+                                </h3>
+                                <div class="space-y-3">
+                                    <button class="w-full p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+                                        <i class="fas fa-comments mr-2"></i>
+                                        Eltern-Forum beitreten
+                                    </button>
+                                    
+                                    <button class="w-full p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors">
+                                        <i class="fas fa-envelope mr-2"></i>
+                                        Newsletter abonnieren
+                                    </button>
+                                    
+                                    <button class="w-full p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">
+                                        <i class="fas fa-headset mr-2"></i>
+                                        Support kontaktieren
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-96 overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Einstellungen</h3>
+                    <button onclick="hideSettings()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3">Benachrichtigungen</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="notifications-daily" class="mr-2" checked>
+                                <span class="text-gray-600">Tägliche Fortschritts-Updates</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="notifications-achievements" class="mr-2" checked>
+                                <span class="text-gray-600">Erfolge und Meilensteine</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="notifications-tips" class="mr-2">
+                                <span class="text-gray-600">Wöchentliche Lerntipps</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3">Datenschutz</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="analytics-sharing" class="mr-2">
+                                <span class="text-gray-600">Anonyme Nutzungsdaten teilen</span>
+                            </label>
+                            <button onclick="exportAllData()" class="block text-blue-600 hover:text-blue-800 text-sm">
+                                Alle Daten exportieren
+                            </button>
+                            <button onclick="deleteAllData()" class="block text-red-600 hover:text-red-800 text-sm">
+                                Alle Daten löschen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button onclick="hideSettings()" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Abbrechen
+                    </button>
+                    <button onclick="saveSettings()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">
+                        Speichern
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parent Dashboard JavaScript -->
+    <script src="parentDashboard.js"></script>
+</body>
+</html>
